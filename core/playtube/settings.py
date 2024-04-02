@@ -12,10 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
-
-load_dotenv(override=True)  # Load environment variables from .env file
-
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,13 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = str(os.getenv('SECRET_KEY'))
+SECRET_KEY = config("SECRET_KEY", default="test")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.getenv('DEBUG')))
+DEBUG = config("DEBUG",default=True)
 
-ALLOWED_HOSTS = str(os.getenv('ALLOWED_HOSTS')).split(
-    ',') if not DEBUG else ['*']
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    cast=lambda v: [s.strip() for s in v.split(",")],
+    default="*",
+)
 
 # Application definition
 
@@ -146,10 +146,10 @@ SERVER_EMAIL = f'PlayTube <{EMAIL_HOST_USER}>'
 ADMINS = [('Admin', os.getenv('ADMIN_EMAIL'))]
 MANAGERS = ADMINS
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = bool(int(os.getenv('CORS_ALLOW_ALL_ORIGINS', 0)))
-CORS_ALLOWED_ORIGINS = str(os.getenv(
-    'CORS_ALLOWED_ORIGINS')).split(',') if not CORS_ALLOW_ALL_ORIGINS else []
+# # CORS settings
+# CORS_ALLOW_ALL_ORIGINS = bool(int(os.getenv('CORS_ALLOW_ALL_ORIGINS', 0)))
+# CORS_ALLOWED_ORIGINS = str(os.getenv(
+#     'CORS_ALLOWED_ORIGINS')).split(',') if not CORS_ALLOW_ALL_ORIGINS else []
 
 # Broken link email ignore list
 IGNORABLE_404_URLS = [
@@ -178,55 +178,55 @@ IGNORABLE_404_URLS = [
 ] if DEBUG else []
 
 # Logging settings
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
-    },
-    "filters": {
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
-        },
-    },
-    "handlers": {
-        "file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": "logs/error.log",
-            "formatter": "verbose",
-        },
-        "console": {
-            "level": "INFO",
-            "filters": ["require_debug_true"],
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-        "mail_admins": {
-            "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
-            "include_html": True,
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console", "file"],
-            "propagate": True,
-        },
-        "django.request": {
-            "handlers": ["mail_admins", "file"],
-            "level": "ERROR",
-            "propagate": False,
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+#             "style": "{",
+#         },
+#         "simple": {
+#             "format": "{levelname} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "filters": {
+#         "require_debug_true": {
+#             "()": "django.utils.log.RequireDebugTrue",
+#         },
+#     },
+#     "handlers": {
+#         "file": {
+#             "level": "ERROR",
+#             "class": "logging.FileHandler",
+#             "filename": "logs/error.log",
+#             "formatter": "verbose",
+#         },
+#         "console": {
+#             "level": "INFO",
+#             "filters": ["require_debug_true"],
+#             "class": "logging.StreamHandler",
+#             "formatter": "simple",
+#         },
+#         "mail_admins": {
+#             "level": "ERROR",
+#             "class": "django.utils.log.AdminEmailHandler",
+#             "include_html": True,
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["console", "file"],
+#             "propagate": True,
+#         },
+#         "django.request": {
+#             "handlers": ["mail_admins", "file"],
+#             "level": "ERROR",
+#             "propagate": False,
+#         },
+#     },
+# }
 
 
 # Static files (CSS, JavaScript, Images)

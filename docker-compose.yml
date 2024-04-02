@@ -1,0 +1,58 @@
+version: "3"
+
+services:
+    redis-server:
+      container_name: redis-server
+      image: redis
+      restart: always
+      ports:
+      - "6379:6379"
+      command : redis-server --save 60 1 --loglevel warning
+    cubeprime:
+      build: .
+      container_name: backend-cubeprime
+      command: python manage.py runserver 0.0.0.0:8000
+      volumes:
+        - ./core:/app
+      ports: 
+        - "8000:8000"
+      environment:
+        - SECRET_KEY='django-insecure-f5zgev(t_a5yl-ui3^=$2moejj6%!a8wk#zohvp(ryt&^$n!ox'
+        - DEBUG=True
+        - ALLOWED_HOSTS=127.0.0.1
+      depends_on:
+       - redis-server
+    worker_celety:
+      build: .
+      command: celery -A core worker --loglevel=info
+      depends_on:
+        - redis-server
+        - cubeprime
+        
+    smtp4dev-cubeprime:
+      image: rnwood/smtp4dev:v3
+      restart: always
+      ports:
+        - '6000:80'
+        - '25:25'
+        - '143:143'
+      volumes:
+        - smtp4dev-data:/smtp4dev
+      environment:
+        - ServerOptions__HostName=smtp4dev
+    master-cubeprime:
+      image: locustio/locust
+      ports:
+         - "8089:8089"
+      volumes:
+         - ./core/locust:/mnt/locust
+      command: -f /mnt/locust/locustfile.py --master -H http://cubeprime:8000
+
+    worker-cubeprime:
+      image: locustio/locust
+      volumes:
+        - ./core/locust:/mnt/locust
+      command: -f /mnt/locust/locustfile.py --worker --master-host master
+
+volumes:
+  smtp4dev-data:
